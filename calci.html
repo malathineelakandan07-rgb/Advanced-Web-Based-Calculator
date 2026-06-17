@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Advanced Calculator</title>
+
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+font-family:'Poppins',sans-serif;
+margin:20px;
+min-height:100vh;
+background:linear-gradient(
+135deg,
+#667eea,
+#764ba2,
+#6dd5ed
+);
+}
+
+body.dark{
+background:linear-gradient(
+135deg,
+#0f172a,
+#1e293b,
+#334155
+);
+color:white;
+}
+body.dark #display{
+background:#1e293b;
+color:white;
+}
+body.dark .buttons button{
+background:#334155;
+color:white;
+}
+.section{
+display:none;
+}
+
+.active{
+display:block;
+}
+
+.tabs button{
+padding:10px 20px;
+margin:5px;
+cursor:pointer;
+}
+
+#display{
+width:100%;
+height:70px;
+font-size:32px;
+font-weight:600;
+text-align:right;
+padding:15px;
+border:none;
+border-radius:15px;
+background:white;
+box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+body.dark .glass{
+background:rgba(15,23,42,.6);
+}
+
+.buttons{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:10px;
+margin-top:10px;
+}
+
+.buttons button{
+padding:18px;
+font-size:18px;
+border:none;
+border-radius:15px;
+cursor:pointer;
+font-weight:600;
+transition:.3s;
+}
+
+#history{
+height:200px;
+overflow:auto;
+border:1px solid #ccc;
+padding:10px;
+margin-top:20px;
+}
+
+#graph{
+height:500px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Advanced Calculator</h1>
+
+<button onclick="toggleTheme()">
+🌙 Toggle Theme
+</button>
+
+<div class="tabs">
+
+<button onclick="showTab('simple')">
+Simple Calculator
+</button>
+
+<button onclick="showTab('scientific')">
+Scientific Calculator
+</button>
+
+<button onclick="showTab('graphing')">
+Graphing Calculator
+</button>
+
+</div>
+
+<input id="display" readonly>
+
+<!-- SIMPLE -->
+
+<div id="simple" class="section active">
+
+<div class="buttons">
+
+<button onclick="append('7')">7</button>
+<button onclick="append('8')">8</button>
+<button onclick="append('9')">9</button>
+<button onclick="append('/')">÷</button>
+
+<button onclick="append('4')">4</button>
+<button onclick="append('5')">5</button>
+<button onclick="append('6')">6</button>
+<button onclick="append('*')">×</button>
+
+<button onclick="append('1')">1</button>
+<button onclick="append('2')">2</button>
+<button onclick="append('3')">3</button>
+<button onclick="append('-')">−</button>
+
+<button onclick="append('0')">0</button>
+<button onclick="append('.')">.</button>
+<button class="equal"
+onclick="calculate()">=</button>
+<button class="operator"
+onclick="append('+')">+</button>
+
+<button class="clear"
+onclick="clearDisplay()">C</button>
+<button onclick="backspace()">⌫</button>
+
+</div>
+
+</div>
+
+<!-- SCIENTIFIC -->
+
+<div id="scientific" class="section">
+
+<div class="buttons">
+
+<button onclick="scientific('sin')">sin</button>
+<button onclick="scientific('cos')">cos</button>
+<button onclick="scientific('tan')">tan</button>
+<button onclick="scientific('sqrt')">√</button>
+
+<button onclick="scientific('asin')">sin⁻¹</button>
+<button onclick="scientific('acos')">cos⁻¹</button>
+<button onclick="scientific('atan')">tan⁻¹</button>
+<button onclick="scientific('square')">x²</button>
+
+<button onclick="scientific('cube')">x³</button>
+<button onclick="scientific('inverse')">1/x</button>
+<button onclick="scientific('log')">log</button>
+<button onclick="scientific('ln')">ln</button>
+
+<button onclick="append(Math.PI)">π</button>
+<button onclick="append(Math.E)">e</button>
+<button onclick="factorialBtn()">n!</button>
+<button onclick="randomNumber()">RAND</button>
+
+<button onclick="scientific('abs')">ABS</button>
+<button onclick="scientific('exp')">EXP</button>
+<button onclick="scientific('floor')">FLOOR</button>
+<button onclick="scientific('ceil')">CEIL</button>
+
+<button onclick="scientific('round')">ROUND</button>
+
+</div>
+
+</div>
+
+<!-- GRAPH -->
+
+<div id="graphing" class="section">
+<input
+type="text"
+id="equation"
+placeholder="Enter function (e.g. x^2, sin(x), cos(x), log(x))"
+style="width:100%;padding:10px;">
+
+<button type="button" onclick="plotGraph()">
+Plot Graph
+</button>
+
+<div id="graph"></div>
+
+</div>
+
+<h2>History</h2>
+
+<div id="history"></div>
+
+<button onclick="clearHistory()">
+Clear History
+</button>
+
+<script>
+
+const display=document.getElementById("display");
+const historyBox=document.getElementById("history");
+
+function showTab(id){
+
+document.querySelectorAll(".section")
+.forEach(sec=>sec.classList.remove("active"));
+
+document.getElementById(id)
+.classList.add("active");
+
+}
+
+function append(value){
+display.value+=value;
+}
+
+function clearDisplay(){
+display.value="";
+}
+
+function backspace(){
+display.value=display.value.slice(0,-1);
+}
+
+function calculate(){
+
+try{
+
+let exp=display.value;
+let result=eval(exp);
+
+display.value=result;
+
+saveHistory(exp+" = "+result);
+
+}catch{
+
+display.value="Error";
+
+}
+
+}
+
+function scientific(type){
+
+let value=parseFloat(display.value);
+
+if(isNaN(value)) return;
+
+let result;
+
+switch(type){
+
+case "sin":
+result=Math.sin(value*Math.PI/180);
+break;
+
+case "cos":
+result=Math.cos(value*Math.PI/180);
+break;
+
+case "tan":
+result=Math.tan(value*Math.PI/180);
+break;
+
+case "asin":
+result=Math.asin(value)*180/Math.PI;
+break;
+
+case "acos":
+result=Math.acos(value)*180/Math.PI;
+break;
+
+case "atan":
+result=Math.atan(value)*180/Math.PI;
+break;
+
+case "sqrt":
+result=Math.sqrt(value);
+break;
+
+case "square":
+result=value*value;
+break;
+
+case "cube":
+result=Math.pow(value,3);
+break;
+
+case "inverse":
+result=1/value;
+break;
+
+case "log":
+result=Math.log10(value);
+break;
+
+case "ln":
+result=Math.log(value);
+break;
+
+case "abs":
+result=Math.abs(value);
+break;
+
+case "exp":
+result=Math.exp(value);
+break;
+
+case "floor":
+result=Math.floor(value);
+break;
+
+case "ceil":
+result=Math.ceil(value);
+break;
+
+case "round":
+result=Math.round(value);
+break;
+
+}
+
+display.value=result;
+
+saveHistory(type+"("+value+") = "+result);
+
+}
+
+function factorial(n){
+
+if(n<0) return "Error";
+
+let result=1;
+
+for(let i=1;i<=n;i++){
+
+result*=i;
+
+}
+
+return result;
+
+}
+
+function factorialBtn(){
+
+display.value=
+factorial(parseInt(display.value));
+
+}
+
+function randomNumber(){
+
+display.value=Math.random();
+
+}
+
+function saveHistory(item){
+
+let history=
+JSON.parse(localStorage.getItem("history"))||[];
+
+history.push(item);
+
+localStorage.setItem(
+"history",
+JSON.stringify(history)
+);
+
+loadHistory();
+
+}
+
+function loadHistory(){
+
+let history=
+JSON.parse(localStorage.getItem("history"))||[];
+
+historyBox.innerHTML="";
+
+history.forEach(item=>{
+
+historyBox.innerHTML+=
+"<p>"+item+"</p>";
+
+});
+
+}
+
+function clearHistory(){
+
+localStorage.removeItem("history");
+
+loadHistory();
+
+}
+function toggleTheme(){
+
+document.body.classList.toggle("dark");
+
+if(document.body.classList.contains("dark")){
+
+localStorage.setItem("theme","dark");
+
+}else{
+
+localStorage.setItem("theme","light");
+
+}
+
+}
+
+if(localStorage.getItem("theme")==="dark"){
+
+document.body.classList.add("dark");
+
+}
+function plotGraph(){
+    console.log("Plot Graph clicked");
+
+    function plotGraph(){
+
+let eq=
+document.getElementById("equation").value;
+
+eq = eq.replace(/\^/g,"**");
+eq = eq.replace(/sin/g,"Math.sin");
+eq = eq.replace(/cos/g,"Math.cos");
+eq = eq.replace(/tan/g,"Math.tan");
+eq = eq.replace(/log/g,"Math.log10");
+eq = eq.replace(/sqrt/g,"Math.sqrt");
+
+let xValues=[];
+let yValues=[];
+
+    for(let x=-20;x<=20;x+=0.1){
+
+        try{
+
+            let y=eval(eq);
+
+            if(isFinite(y)){
+                xValues.push(x);
+                yValues.push(y);
+            }
+
+        }catch{}
+
+    }
+
+    Plotly.newPlot("graph",[{
+        x:xValues,
+        y:yValues,
+        mode:"lines"
+    }]);
+}
+
+document.addEventListener("keydown",(e)=>{
+
+if(!isNaN(e.key)||
+"+-*/.%".includes(e.key)){
+append(e.key);
+}
+
+if(e.key==="Enter"){
+calculate();
+}
+
+if(e.key==="Backspace"){
+backspace();
+}
+
+if(e.key==="Escape"){
+clearDisplay();
+}
+
+});
+
+loadHistory();
+
+</script>
+
+</body>
+</html>
