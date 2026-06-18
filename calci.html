@@ -209,10 +209,9 @@ id="equation"
 placeholder="Enter function (e.g. x^2, sin(x), cos(x), log(x))"
 style="width:100%;padding:10px;">
 
-<button type="button" onclick="plotGraph()">
-Plot Graph
+<button onclick="plotGraph()">
+📈 Plot Graph
 </button>
-
 <div id="graph"></div>
 
 </div>
@@ -447,11 +446,8 @@ document.body.classList.add("dark");
 
 }
 function plotGraph(){
-    console.log("Plot Graph clicked");
 
-    function plotGraph(){
-
-let eq=
+let eq =
 document.getElementById("equation").value;
 
 eq = eq.replace(/\^/g,"**");
@@ -464,26 +460,28 @@ eq = eq.replace(/sqrt/g,"Math.sqrt");
 let xValues=[];
 let yValues=[];
 
-    for(let x=-20;x<=20;x+=0.1){
+for(let x=-20;x<=20;x+=0.1){
 
-        try{
+    try{
 
-            let y=eval(eq);
+        let y=eval(eq);
 
-            if(isFinite(y)){
-                xValues.push(x);
-                yValues.push(y);
-            }
+        if(isFinite(y)){
+            xValues.push(x);
+            yValues.push(y);
+        }
 
-        }catch{}
+    }catch{}
 
-    }
+}
 
-    Plotly.newPlot("graph",[{
-        x:xValues,
-        y:yValues,
-        mode:"lines"
-    }]);
+Plotly.newPlot("graph",[{
+    x:xValues,
+    y:yValues,
+    mode:"lines",
+    type:"scatter"
+}]);
+
 }
 
 document.addEventListener("keydown",(e)=>{
@@ -513,3 +511,9 @@ loadHistory();
 
 </body>
 </html>
+
+
+
+
+
+
